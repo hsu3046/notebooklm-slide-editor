@@ -258,9 +258,9 @@ export const translations = {
         en: 'Enter your API Key from Google AI Studio.',
     },
     'apikey.placeholder': {
-        ko: 'AIzaSy...',
-        ja: 'AIzaSy...',
-        en: 'AIzaSy...',
+        ko: 'API 키를 붙여넣기 하세요',
+        ja: 'APIキーを貼り付けてください',
+        en: 'Paste your API key here',
     },
     'apikey.start': {
         ko: '시작하기',

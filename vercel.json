@@ -1,0 +1,23 @@
+{
+    "rewrites": [
+        {
+            "source": "/notebooklm-slide-editor/assets/:path*",
+            "destination": "/assets/:path*"
+        },
+        {
+            "source": "/notebooklm-slide-editor",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/notebooklm-slide-editor/:path*",
+            "destination": "/index.html"
+        }
+    ],
+    "redirects": [
+        {
+            "source": "/",
+            "destination": "/notebooklm-slide-editor",
+            "statusCode": 302
+        }
+    ]
+}

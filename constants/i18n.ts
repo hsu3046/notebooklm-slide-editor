@@ -293,9 +293,9 @@ export const translations = {
         en: 'Change API Key',
     },
     'apikey.opensource': {
-        ko: '🔓 이 프로젝트는 오픈소스입니다',
-        ja: '🔓 このプロジェクトはオープンソースです',
-        en: '🔓 This project is open source',
+        ko: '⭐ 이 프로젝트는 오픈소스입니다',
+        ja: '⭐ このプロジェクトはオープンソースです',
+        en: '⭐ This project is open source',
     },
 
     // ── API Cost ──

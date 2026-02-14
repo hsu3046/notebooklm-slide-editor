@@ -445,7 +445,7 @@ const App: React.FC = () => {
           {/* 오픈소스 배지 */}
           <div className="mt-6 text-center">
             <a
-              href="https://github.com/teumlabs/notebooklm-slide-editor"
+              href="https://github.com/hsu3046/notebooklm-slide-editor"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-400 transition-colors"

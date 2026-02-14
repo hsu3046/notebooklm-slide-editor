@@ -1,6 +1,6 @@
 # Project Memory
 
-**Last Updated:** 2026-02-14 (v2)
+**Last Updated:** 2026-02-14 (v3)
 
 ## Critical Issues & Solutions
 
@@ -35,6 +35,12 @@
 - **Solution:** `ai.models.generateContent()` + `gemini-2.5-flash-image` 모델로 전환. 이미지와 텍스트 프롬프트를 함께 보내면 이미지 편집 가능
 - **Prevention:** Gemini API Key 환경에서는 `editImage` 사용 불가. 이미지 편집은 반드시 `generateContent` + image 모델 사용
 - **응답 구조:** `response.candidates[0].content.parts[]` 중 `part.inlineData.data`에 Base64 이미지
+
+### 2026-02-14 Issue: window.confirm()이 파일 업로드 시 자동 dismiss
+- **Problem:** 파일 업로드/드래그 앤 드롭 시 `window.confirm()` 대화상자가 순간 표시 후 자동 사라짐
+- **Root Cause:** 파일 시스템 다이얼로그 ↔ 브라우저 탭 간 포커스 전환으로 `confirm()` dismiss
+- **Solution:** `window.confirm()` → 커스텀 React 모달로 교체. `pendingAction` 상태(`{ type: 'drop', file }` | `{ type: 'upload' }`)로 구분
+- **Prevention:** 네이티브 `alert()`, `confirm()`, `prompt()` 대신 항상 커스텀 모달 사용. 특히 파일 관련 워크플로우에서 필수
 
 ## Important Decisions
 
@@ -80,6 +86,22 @@
 - **Reasoning:** 빠른 프로토타이핑
 - **Trade-offs:** `declare const any` 타입 불안, 오프라인 불가, SRI hash 미적용
 
+### Decision: Undo/Redo 히스토리 스택 채택
+- **Date:** 2026-02-14
+- **Options:** A) 히스토리 스택 (변경분 추적), B) 스냅샷 기반 (전체 상태 복사), C) 기존 pop() 유지
+- **Chosen:** A
+- **Reasoning:** 모든 overlay 변경(추가/수정/이동/전체삭제) 추적 + Redo 지원. 메모리 효율적. `structuredClone`으로 deep copy
+- **Trade-offs:** `forceRender` 상태 추가 필요 (ref 기반 히스토리 업데이트 반영용)
+- **구현:** `hooks/useUndoHistory.ts`, MAX_HISTORY=50, `Cmd+Z`/`Cmd+Shift+Z` 단축키
+
+### Decision: Google Fonts 확장 (로컬 폰트 대신)
+- **Date:** 2026-02-14
+- **Options:** A) Local Font Access API (시스템 전체), B) Google Fonts 확장, C) 하드코딩 확장
+- **Chosen:** B
+- **Reasoning:** 모든 브라우저 호환, 권한 불필요, 한/일 폰트 포함, PDF 내보내기 시 안정적
+- **Trade-offs:** Option A 대비 폰트 수 제한적이지만, 실용성 우선
+- **구현:** 20종 (한국어 7, 일본어 3, Sans 7, Serif 3, Mono 3), `optgroup` 카테고리 UI
+
 ## Recurring Patterns
 
 ### Pattern: Canvas/Image 리소스 미해제 (해결됨)
@@ -97,6 +119,9 @@
 - 렌더링 로직은 `utils/renderOverlay.ts`에 공용화 (3곳에서 사용)
 - 슬라이드 이미지는 Blob ObjectURL로 관리 (`revokeSlideUrls()`로 해제)
 - 상태 관리: React useState로 단순 관리 (별도 상태 관리 라이브러리 미사용)
-- Undo: 단순 pop() — 히스토리 스택/Redo 미구현
+- Undo/Redo: `useUndoHistory` 훅으로 슬라이드별 히스토리 스택 관리. `Cmd+Z`/`Cmd+Shift+Z` 단축키 지원
 - Gemini API: `geminiProxy.ts`에서 싱글톤 패턴으로 SDK 인스턴스 관리
 - Inpainting: `gemini-2.5-flash-image` + `generateContent`로 텍스트 제거. 전체 슬라이드 전송 + 좌표 프롬프트 → 결과에서 영역 crop + 8px feathering
+- 폰트: Google Fonts 20종 로딩 (`index.html` link), `optgroup` 카테고리별 UI (한국어/일본어/Sans/Serif/Mono)
+- 다국어: 커스텀 i18n (React Context + `useI18n` 훅), ko/ja/en 지원
+- 파일 업로드: 기존 파일 덮어쓰기 시 커스텀 모달로 확인 (`pendingAction` 패턴)

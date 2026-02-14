@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { Rect, SlideData, TextOverlay, OCRResult, VerticalAlign, HorizontalAlign } from '../types';
 import { analyzeTextInImage, inpaintBackground } from '../services/geminiService';
+import { useI18n } from '../hooks/useI18n';
+import { trackOcrAnalysis, trackInpaint, trackTextReplace } from '../utils/analytics';
 import {
   Loader2,
   Type as TypeIcon,
@@ -25,14 +27,61 @@ interface SidebarProps {
   selectedOverlayId: string | null;
   onApplyOverlay: (overlay: TextOverlay) => void;
   onUpdateOverlays: (overlays: TextOverlay[]) => void;
+  apiKey: string;
+  onOcrCost: () => void;
+  onInpaintCost: () => void;
+  showError: (msg: string) => void;
 }
 
-const FONTS = [
-  { name: 'Inter', value: 'Inter' },
-  { name: 'Arial', value: 'Arial' },
-  { name: 'Roboto', value: 'Roboto' },
-  { name: 'Times New Roman', value: 'serif' },
-  { name: 'Courier New', value: 'monospace' },
+const FONT_GROUPS = [
+  {
+    label: '한국어 / Korean',
+    fonts: [
+      { name: 'Noto Sans KR', value: 'Noto Sans KR' },
+      { name: 'Noto Serif KR', value: 'Noto Serif KR' },
+      { name: 'Pretendard', value: 'Pretendard Variable' },
+      { name: 'Gothic A1', value: 'Gothic A1' },
+      { name: 'IBM Plex Sans KR', value: 'IBM Plex Sans KR' },
+      { name: 'Gaegu (손글씨)', value: 'Gaegu' },
+      { name: 'Do Hyeon (타이틀)', value: 'Do Hyeon' },
+    ],
+  },
+  {
+    label: '日本語 / Japanese',
+    fonts: [
+      { name: 'Noto Sans JP', value: 'Noto Sans JP' },
+      { name: 'Noto Serif JP', value: 'Noto Serif JP' },
+      { name: 'M PLUS Rounded 1c', value: 'M PLUS Rounded 1c' },
+    ],
+  },
+  {
+    label: 'Sans-serif',
+    fonts: [
+      { name: 'Inter', value: 'Inter' },
+      { name: 'Roboto', value: 'Roboto' },
+      { name: 'Open Sans', value: 'Open Sans' },
+      { name: 'Lato', value: 'Lato' },
+      { name: 'Poppins', value: 'Poppins' },
+      { name: 'Montserrat', value: 'Montserrat' },
+      { name: 'Arial', value: 'Arial' },
+    ],
+  },
+  {
+    label: 'Serif',
+    fonts: [
+      { name: 'Playfair Display', value: 'Playfair Display' },
+      { name: 'Merriweather', value: 'Merriweather' },
+      { name: 'Times New Roman', value: 'serif' },
+    ],
+  },
+  {
+    label: 'Monospace',
+    fonts: [
+      { name: 'Source Code Pro', value: 'Source Code Pro' },
+      { name: 'JetBrains Mono', value: 'JetBrains Mono' },
+      { name: 'Courier New', value: 'monospace' },
+    ],
+  },
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -40,8 +89,13 @@ const Sidebar: React.FC<SidebarProps> = ({
   selection,
   selectedOverlayId,
   onApplyOverlay,
-  onUpdateOverlays
+  onUpdateOverlays,
+  apiKey,
+  onOcrCost,
+  onInpaintCost,
+  showError
 }) => {
+  const { t } = useI18n();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analyzeStatus, setAnalyzeStatus] = useState<string>('');
   const [ocrResult, setOcrResult] = useState<OCRResult | null>(null);
@@ -81,7 +135,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const handleAnalyze = async () => {
     if (!selection || !activeSlide) return;
     setIsAnalyzing(true);
-    setAnalyzeStatus('텍스트 추출 중...');
+    setAnalyzeStatus(t('sidebar.extracting'));
     try {
       const canvas = document.createElement('canvas');
       canvas.width = selection.width;
@@ -98,7 +152,9 @@ const Sidebar: React.FC<SidebarProps> = ({
       canvas.width = 0;
       canvas.height = 0;
 
-      const result = await analyzeTextInImage(cropDataUrl);
+      const result = await analyzeTextInImage(apiKey, cropDataUrl);
+      onOcrCost();
+      trackOcrAnalysis();
 
       setOcrResult(result);
       setReplacementText(result.text);
@@ -114,7 +170,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       console.log('[Sidebar] backgroundType:', result.backgroundType);
       if (result.backgroundType === 'complex' || result.backgroundType === 'gradient') {
         console.log('[Sidebar] Starting inpainting with full slide...');
-        setAnalyzeStatus('배경 복원 중...');
+        setAnalyzeStatus(t('sidebar.restoringBg'));
         setIsInpainting(true);
 
         // 전체 슬라이드 이미지의 실제 크기 측정
@@ -124,13 +180,16 @@ const Sidebar: React.FC<SidebarProps> = ({
         const slideSize = { width: slideImg.naturalWidth, height: slideImg.naturalHeight };
 
         const fullResult = await inpaintBackground(
+          apiKey,
           activeSlide.dataUrl,
           { x: selection.x, y: selection.y, width: selection.width, height: selection.height },
           slideSize
         );
+        onInpaintCost();
+        trackInpaint();
 
         if (fullResult) {
-          setAnalyzeStatus('후처리 중...');
+          setAnalyzeStatus(t('sidebar.postProcessing'));
 
           // 반환된 전체 이미지에서 선택 영역만 crop
           const resultImg = new Image();
@@ -196,7 +255,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       }
     } catch (err) {
       console.error('OCR analysis failed');
-      alert('AI 분석 중 오류가 발생했습니다. 다시 시도해주세요.');
+      showError(t('alert.analysisError'));
     } finally {
       setIsAnalyzing(false);
       setIsInpainting(false);
@@ -228,6 +287,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       vAlign,
       hAlign
     });
+    trackTextReplace();
   };
 
   const isEditing = !!selectedOverlayId;
@@ -237,7 +297,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-sm font-bold text-slate-200 flex items-center gap-2">
           <TypeIcon size={16} className="text-blue-400" />
-          {isEditing ? '텍스트 수정' : '텍스트 교체'}
+          {isEditing ? t('sidebar.editText') : t('sidebar.replaceText')}
         </h2>
       </div>
 
@@ -246,39 +306,39 @@ const Sidebar: React.FC<SidebarProps> = ({
           <div className="w-16 h-16 rounded-xl bg-slate-800 flex items-center justify-center mb-4 border border-slate-700">
             <Info size={32} className="opacity-50" />
           </div>
-          <p className="text-sm">텍스트 교체 영역을 선택하거나<br />교체된 텍스트를 클릭하세요</p>
+          <p className="text-sm" dangerouslySetInnerHTML={{ __html: t('sidebar.placeholder').replace('\n', '<br />') }} />
         </div>
       ) : (
         <div className="space-y-6">
           {!isEditing && (
             <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
-              <h3 className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-3">AI 텍스트 분석</h3>
+              <h3 className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-3">{t('sidebar.aiAnalysis')}</h3>
               {isAnalyzing ? (
                 <div className="flex items-center gap-3 py-4 text-blue-400">
                   <Loader2 className="animate-spin" size={18} />
-                  <span className="text-sm">{analyzeStatus || '분석 중...'}</span>
+                  <span className="text-sm">{analyzeStatus || t('sidebar.analyzing')}</span>
                 </div>
               ) : ocrResult ? (
                 <div className="space-y-3">
                   <div className="p-3 bg-slate-900 rounded text-sm text-slate-300 italic border border-slate-800">"{ocrResult.text}"</div>
                   <div className="flex items-center gap-2 text-xs">
-                    <span className="text-slate-500">배경:</span>
+                    <span className="text-slate-500">{t('sidebar.background')}</span>
                     <span className={`px-2 py-0.5 rounded-full font-medium ${ocrResult.backgroundType === 'complex' ? 'bg-orange-500/20 text-orange-300' :
                       ocrResult.backgroundType === 'gradient' ? 'bg-purple-500/20 text-purple-300' :
                         'bg-green-500/20 text-green-300'
                       }`}>
-                      {ocrResult.backgroundType === 'complex' ? '🖼 복잡' :
-                        ocrResult.backgroundType === 'gradient' ? '🌈 그라디언트' :
-                          '⬜ 단색'}
+                      {ocrResult.backgroundType === 'complex' ? t('sidebar.bgComplex') :
+                        ocrResult.backgroundType === 'gradient' ? t('sidebar.bgGradient') :
+                          t('sidebar.bgSolid')}
                     </span>
                     {isInpainting && (
                       <span className="flex items-center gap-1 text-blue-400">
                         <Loader2 className="animate-spin" size={12} />
-                        배경 복원 중...
+                        {t('sidebar.bgRestoring')}
                       </span>
                     )}
                     {backgroundImage && (
-                      <span className="text-green-400">✓ 복원 완료</span>
+                      <span className="text-green-400">{t('sidebar.bgRestored')}</span>
                     )}
                   </div>
                 </div>
@@ -287,7 +347,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   onClick={handleAnalyze}
                   className="w-full bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-all"
                 >
-                  <Sparkles size={14} className="text-blue-400" /> AI 분석 (OCR) 실행
+                  <Sparkles size={14} className="text-blue-400" /> {t('sidebar.runOcr')}
                 </button>
               )}
             </div>
@@ -295,7 +355,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">내용</label>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('sidebar.content')}</label>
               <textarea
                 value={replacementText}
                 onChange={(e) => {
@@ -308,7 +368,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">수평 정렬</label>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('sidebar.hAlign')}</label>
                 <div className="flex bg-slate-900 p-1 rounded-lg border border-slate-800">
                   <button onClick={() => { setHAlign('left'); if (isEditing) updateSelectedOverlay({ hAlign: 'left' }); }} className={`flex-1 p-1.5 rounded flex justify-center ${hAlign === 'left' ? 'bg-slate-700 text-blue-400' : 'text-slate-500'}`}><AlignLeft size={16} /></button>
                   <button onClick={() => { setHAlign('center'); if (isEditing) updateSelectedOverlay({ hAlign: 'center' }); }} className={`flex-1 p-1.5 rounded flex justify-center ${hAlign === 'center' ? 'bg-slate-700 text-blue-400' : 'text-slate-500'}`}><AlignCenter size={16} /></button>
@@ -316,17 +376,17 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">수직 정렬</label>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('sidebar.vAlign')}</label>
                 <div className="flex bg-slate-900 p-1 rounded-lg border border-slate-800">
-                  <button onClick={() => { setVAlign('top'); if (isEditing) updateSelectedOverlay({ vAlign: 'top' }); }} className={`flex-1 p-1.5 rounded flex justify-center ${vAlign === 'top' ? 'bg-slate-700 text-blue-400' : 'text-slate-500'}`} title="위쪽"><AlignVerticalJustifyStart size={16} /></button>
-                  <button onClick={() => { setVAlign('middle'); if (isEditing) updateSelectedOverlay({ vAlign: 'middle' }); }} className={`flex-1 p-1.5 rounded flex justify-center ${vAlign === 'middle' ? 'bg-slate-700 text-blue-400' : 'text-slate-500'}`} title="가운데"><AlignVerticalJustifyCenter size={16} /></button>
-                  <button onClick={() => { setVAlign('bottom'); if (isEditing) updateSelectedOverlay({ vAlign: 'bottom' }); }} className={`flex-1 p-1.5 rounded flex justify-center ${vAlign === 'bottom' ? 'bg-slate-700 text-blue-400' : 'text-slate-500'}`} title="아래쪽"><AlignVerticalJustifyEnd size={16} /></button>
+                  <button onClick={() => { setVAlign('top'); if (isEditing) updateSelectedOverlay({ vAlign: 'top' }); }} className={`flex-1 p-1.5 rounded flex justify-center ${vAlign === 'top' ? 'bg-slate-700 text-blue-400' : 'text-slate-500'}`} title={t('sidebar.vAlignTop')}><AlignVerticalJustifyStart size={16} /></button>
+                  <button onClick={() => { setVAlign('middle'); if (isEditing) updateSelectedOverlay({ vAlign: 'middle' }); }} className={`flex-1 p-1.5 rounded flex justify-center ${vAlign === 'middle' ? 'bg-slate-700 text-blue-400' : 'text-slate-500'}`} title={t('sidebar.vAlignMiddle')}><AlignVerticalJustifyCenter size={16} /></button>
+                  <button onClick={() => { setVAlign('bottom'); if (isEditing) updateSelectedOverlay({ vAlign: 'bottom' }); }} className={`flex-1 p-1.5 rounded flex justify-center ${vAlign === 'bottom' ? 'bg-slate-700 text-blue-400' : 'text-slate-500'}`} title={t('sidebar.vAlignBottom')}><AlignVerticalJustifyEnd size={16} /></button>
                 </div>
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">글꼴</label>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('sidebar.font')}</label>
               <select
                 value={fontFamily}
                 onChange={(e) => {
@@ -335,13 +395,17 @@ const Sidebar: React.FC<SidebarProps> = ({
                 }}
                 className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
               >
-                {FONTS.map(f => <option key={f.value} value={f.value}>{f.name}</option>)}
+                {FONT_GROUPS.map(group => (
+                  <optgroup key={group.label} label={group.label}>
+                    {group.fonts.map(f => <option key={f.value} value={f.value} style={{ fontFamily: f.value }}>{f.name}</option>)}
+                  </optgroup>
+                ))}
               </select>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">크기</label>
+                <label className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('sidebar.size')}</label>
                 <input
                   type="number"
                   value={fontSize}
@@ -355,7 +419,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 />
               </div>
               <div className="space-y-2">
-                <label className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">색상</label>
+                <label className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('sidebar.color')}</label>
                 <div className="flex gap-2 items-center bg-slate-900 border border-slate-700 rounded-lg px-2 py-1">
                   <input
                     type="color"
@@ -372,7 +436,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             </div>
 
             <div className="space-y-2">
-              <label className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">두께</label>
+              <label className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('sidebar.weight')}</label>
               <div className="flex p-1 bg-slate-900 rounded-lg border border-slate-800">
                 <button
                   onClick={() => { setFontWeight('normal'); if (isEditing) updateSelectedOverlay({ fontWeight: 'normal' }); }}
@@ -395,7 +459,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 disabled={!ocrResult}
                 className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 mt-2 shadow-lg active:scale-95 transition-all"
               >
-                <CheckCircle2 size={18} /> 텍스트 적용
+                <CheckCircle2 size={18} /> {t('sidebar.apply')}
               </button>
             )}
           </div>

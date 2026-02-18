@@ -12,12 +12,5 @@
             "source": "/notebooklm-slide-editor/:path*",
             "destination": "/index.html"
         }
-    ],
-    "redirects": [
-        {
-            "source": "/",
-            "destination": "/notebooklm-slide-editor",
-            "statusCode": 302
-        }
     ]
 }

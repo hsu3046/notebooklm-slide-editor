@@ -3,6 +3,7 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { SlideData, Rect, Point, HandleType, TextOverlay } from '../types';
 import { COLORS, HANDLE_SIZE, MIN_RECT_SIZE, ZOOM_STEP, MAX_ZOOM, MIN_ZOOM, PAN_STEP } from '../constants';
 import { renderOverlayToCanvas, preloadBackgroundImages } from '../utils/renderOverlay';
+import { useI18n } from '../hooks/useI18n';
 
 interface EditorCanvasProps {
   slide: SlideData;
@@ -19,6 +20,7 @@ const EditorCanvas: React.FC<EditorCanvasProps> = ({
   onOverlaySelect,
   onUpdateOverlays
 }) => {
+  const { t } = useI18n();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -346,12 +348,12 @@ const EditorCanvas: React.FC<EditorCanvasProps> = ({
       <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-slate-800/90 px-5 py-2.5 rounded-full text-xs font-medium text-slate-200 border border-slate-700 shadow-2xl pointer-events-none flex items-center gap-5 backdrop-blur-sm">
         <div className="flex items-center gap-2">
           <span className="bg-slate-700 px-1.5 py-0.5 rounded text-[10px] text-blue-400 font-bold">Space + Drag / Arrows</span>
-          <span>이미지 이동</span>
+          <span>{t('canvas.panHint')}</span>
         </div>
         <div className="w-px h-3 bg-slate-600"></div>
         <div className="flex items-center gap-2">
           <span className="bg-slate-700 px-1.5 py-0.5 rounded text-[10px] text-blue-400 font-bold">Drag Selection</span>
-          <span>영역 선택</span>
+          <span>{t('canvas.selectHint')}</span>
         </div>
       </div>
     </div>

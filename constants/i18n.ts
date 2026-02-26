@@ -329,6 +329,18 @@ export const translations = {
         ja: '1回あたり ~$0.003',
         en: '~$0.003 per call',
     },
+
+    // ── Canvas hints ──
+    'canvas.panHint': {
+        ko: '이미지 이동',
+        ja: '画像移動',
+        en: 'Pan Image',
+    },
+    'canvas.selectHint': {
+        ko: '영역 선택',
+        ja: '範囲選択',
+        en: 'Select Area',
+    },
 } as const;
 
 export type TranslationKey = keyof typeof translations;

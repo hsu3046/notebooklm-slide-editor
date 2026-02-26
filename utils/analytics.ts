@@ -9,7 +9,7 @@ declare global {
     }
 }
 
-const GA_ID = 'G-CNPWFPFEBK';
+// GA ID is configured in index.html (optional)
 
 /** GA4 커스텀 이벤트 발송 */
 export function trackEvent(

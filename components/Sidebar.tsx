@@ -306,7 +306,9 @@ const Sidebar: React.FC<SidebarProps> = ({
           <div className="w-16 h-16 rounded-xl bg-slate-800 flex items-center justify-center mb-4 border border-slate-700">
             <Info size={32} className="opacity-50" />
           </div>
-          <p className="text-sm" dangerouslySetInnerHTML={{ __html: t('sidebar.placeholder').replace('\n', '<br />') }} />
+          <p className="text-sm">{t('sidebar.placeholder').split('\n').map((line, i, arr) => (
+            <React.Fragment key={i}>{line}{i < arr.length - 1 && <br />}</React.Fragment>
+          ))}</p>
         </div>
       ) : (
         <div className="space-y-6">

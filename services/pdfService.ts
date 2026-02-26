@@ -54,8 +54,6 @@ export const convertPdfToImages = async (file: File): Promise<SlideData[]> => {
 };
 
 /**
- * 슬라이드를 PDF로 내보내기.
-/**
  * 슬라이드를 PDF Blob으로 생성.
  * showSaveFilePicker와 함께 사용하기 위해 Blob을 반환.
  */

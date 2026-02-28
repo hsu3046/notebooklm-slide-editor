@@ -28,6 +28,8 @@ interface SidebarProps {
   onApplyOverlay: (overlay: TextOverlay) => void;
   onUpdateOverlays: (overlays: TextOverlay[]) => void;
   apiKey: string;
+  ocrModels: readonly string[];
+  inpaintModels: readonly string[];
   onOcrCost: () => void;
   onInpaintCost: () => void;
   showError: (msg: string) => void;
@@ -91,6 +93,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   onApplyOverlay,
   onUpdateOverlays,
   apiKey,
+  ocrModels,
+  inpaintModels,
   onOcrCost,
   onInpaintCost,
   showError
@@ -152,7 +156,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       canvas.width = 0;
       canvas.height = 0;
 
-      const result = await analyzeTextInImage(apiKey, cropDataUrl);
+      const result = await analyzeTextInImage(apiKey, cropDataUrl, ocrModels);
       onOcrCost();
       trackOcrAnalysis();
 
@@ -183,7 +187,8 @@ const Sidebar: React.FC<SidebarProps> = ({
           apiKey,
           activeSlide.dataUrl,
           { x: selection.x, y: selection.y, width: selection.width, height: selection.height },
-          slideSize
+          slideSize,
+          inpaintModels
         );
         onInpaintCost();
         trackInpaint();

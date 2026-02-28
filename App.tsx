@@ -5,13 +5,15 @@ import { convertPdfToImages, generatePdfBlob } from './services/pdfService';
 import { renderOverlayToCanvas, preloadBackgroundImages } from './utils/renderOverlay';
 import EditorCanvas from './components/EditorCanvas';
 import Sidebar from './components/Sidebar';
+import SettingsModal from './components/SettingsModal';
 import { ToastContainer } from './components/ToastContainer';
 import { useI18n } from './hooks/useI18n';
 import { useUndoHistory } from './hooks/useUndoHistory';
 import { useApiKey } from './hooks/useApiKey';
 import { useApiCost } from './hooks/useApiCost';
+import { useModelConfig } from './hooks/useModelConfig';
 import { useToast } from './hooks/useToast';
-import { trackApiKeySet, trackFileUpload, trackDownloadImages, trackDownloadPdf, trackLocaleChange } from './utils/analytics';
+import { trackApiKeySet, trackFileUpload, trackDownloadImages, trackDownloadPdf } from './utils/analytics';
 import { Locale } from './constants/i18n';
 import {
   FileUp,
@@ -22,21 +24,15 @@ import {
   Trash2,
   History,
   Image as ImageIcon,
-  Globe,
   AlertTriangle,
   WandSparkles,
   Redo2,
-  Key,
-  Eye,
-  EyeOff,
+  Settings,
   DollarSign,
-  ExternalLink
 } from 'lucide-react';
 
-const LOCALE_LABELS: Record<Locale, string> = { ko: '한국어', ja: '日本語', en: 'English' };
-
 const App: React.FC = () => {
-  const { t, locale, setLocale } = useI18n();
+  const { t, locale } = useI18n();
   const [slides, setSlides] = useState<SlideData[]>([]);
   const [activeSlideIdx, setActiveSlideIdx] = useState(0);
   const [selection, setSelection] = useState<Rect | null>(null);
@@ -44,19 +40,31 @@ const App: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [pendingAction, setPendingAction] = useState<{ type: 'drop'; file: File } | { type: 'upload' } | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { pushState, undo, redo, resetAll, canUndo, canRedo } = useUndoHistory();
   const { apiKey, setApiKey, clearApiKey, isKeySet } = useApiKey();
-  const apiCost = useApiCost();
-  const [showKey, setShowKey] = useState(false);
-  const [keyInput, setKeyInput] = useState('');
+  const { presetId, setPresetId, preset } = useModelConfig();
+  const apiCost = useApiCost(preset.costPerOcr, preset.costPerInpaint);
   const [, forceRender] = useState(0);
   const { toasts, removeToast, showError, showWarning } = useToast();
 
   const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
   const ALLOWED_TYPES = ['application/pdf', 'image/png', 'image/jpeg', 'image/webp', 'image/gif'];
 
+  // 초기 진입 시 API Key 미설정이면 설정 모달 자동 오픈
+  const hasAutoOpened = useRef(false);
+  useEffect(() => {
+    if (!isKeySet && !hasAutoOpened.current) {
+      hasAutoOpened.current = true;
+      setShowSettings(true);
+    }
+  }, [isKeySet]);
 
+  const handleSetApiKey = (key: string) => {
+    setApiKey(key);
+    trackApiKeySet();
+  };
 
   /**
    * 파일 처리 공통 로직 (업로드 + 드롭 공용)
@@ -185,6 +193,11 @@ const App: React.FC = () => {
   };
 
   const handleApplyOverlay = (overlay: TextOverlay) => {
+    if (!isKeySet) {
+      showWarning(t('settings.apiRequired'));
+      setShowSettings(true);
+      return;
+    }
     const currentSlide = slides[activeSlideIdx];
     if (currentSlide) pushState(activeSlideIdx, currentSlide.overlays);
     setSlides(prev => prev.map((s, idx) => idx === activeSlideIdx ? { ...s, overlays: [...s.overlays, overlay] } : s));
@@ -360,122 +373,6 @@ const App: React.FC = () => {
     }
   };
 
-  // ── API Key 미설정 시 입력 화면 ──
-  if (!isKeySet) {
-    return (
-      <div className="flex flex-col min-h-screen bg-[#0f172a] text-slate-100 font-sans items-center py-16 overflow-y-auto relative">
-        {/* Language switcher */}
-        <div className="absolute top-6 right-6">
-          <div className="relative group">
-            <button className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm text-slate-300 border border-slate-700 transition-all">
-              <Globe size={16} />
-              <span>{LOCALE_LABELS[locale]}</span>
-            </button>
-            <div className="absolute right-0 top-full mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 min-w-[120px]">
-              {(['ko', 'ja', 'en'] as Locale[]).map(l => (
-                <button
-                  key={l}
-                  onClick={() => setLocale(l)}
-                  className={`w-full text-left px-4 py-2 text-sm hover:bg-slate-700 first:rounded-t-lg last:rounded-b-lg transition-colors ${locale === l ? 'text-blue-400 font-bold' : 'text-slate-300'
-                    }`}
-                >
-                  {LOCALE_LABELS[l]}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="max-w-md w-full mx-4">
-          <div className="text-center mb-10">
-            <div className="inline-flex p-4 bg-blue-600/20 rounded-2xl mb-6">
-              <WandSparkles size={48} className="text-blue-400" />
-            </div>
-            <h1 className="text-3xl font-black tracking-tight mb-2">{t('header.title')}</h1>
-            <p className="text-slate-400 text-sm">{t('apikey.description')}</p>
-          </div>
-
-          <div className="bg-slate-800/60 border border-slate-700 rounded-2xl p-6 space-y-5">
-            <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">{t('apikey.title')}</label>
-              <div className="relative">
-                <input
-                  type={showKey ? 'text' : 'password'}
-                  value={keyInput}
-                  onChange={e => setKeyInput(e.target.value)}
-                  placeholder={t('apikey.placeholder')}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 pr-12 text-sm text-slate-200 focus:outline-none focus:border-blue-500 font-mono"
-                />
-                <button
-                  onClick={() => setShowKey(!showKey)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
-                >
-                  {showKey ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </div>
-
-            <button
-              onClick={() => { if (keyInput.trim()) { setApiKey(keyInput.trim()); trackApiKeySet(); } }}
-              disabled={!keyInput.trim()}
-              className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:hover:bg-blue-600 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
-            >
-              <Key size={18} />
-              {t('apikey.start')}
-            </button>
-
-            <a
-              href="https://aistudio.google.com/apikey"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-1.5 text-sm text-blue-400 hover:text-blue-300 transition-colors"
-            >
-              {t('apikey.getKey')}
-              <ExternalLink size={14} />
-            </a>
-          </div>
-
-          {/* 개인정보 보호 안내 */}
-          <div className="mt-8 space-y-3 text-xs text-slate-500">
-            <p>{t('apikey.privacy1')}</p>
-            <p>{t('apikey.privacy2')}</p>
-            <p>{t('apikey.privacy3')}</p>
-          </div>
-
-          {/* 오픈소스 배지 */}
-          <div className="mt-6 text-center">
-            <a
-              href="https://github.com/hsu3046/notebooklm-slide-editor"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-400 transition-colors"
-            >
-              {t('apikey.opensource')}
-            </a>
-          </div>
-
-          {/* API 비용 안내 */}
-          <div className="mt-8 mb-4 bg-slate-800/40 border border-slate-700/50 rounded-xl p-4">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
-              <DollarSign size={14} />
-              {t('cost.estimated')}
-            </h3>
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="bg-slate-900/50 rounded-lg p-3">
-                <p className="text-slate-300 font-medium mb-1">{t('cost.ocr')}</p>
-                <p className="text-slate-500">{t('cost.perOcr')}</p>
-              </div>
-              <div className="bg-slate-900/50 rounded-lg p-3">
-                <p className="text-slate-300 font-medium mb-1">{t('cost.inpaint')}</p>
-                <p className="text-slate-500">{t('cost.perInpaint')}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col h-screen bg-[#0f172a] text-slate-100 font-sans">
       <header className="h-16 border-b border-slate-800 flex items-center justify-between px-6 bg-[#1e293b] shrink-0">
@@ -506,32 +403,17 @@ const App: React.FC = () => {
               <span className="text-slate-600">({apiCost.ocrCount + apiCost.inpaintCount})</span>
             </div>
           )}
-          {/* API Key 변경 */}
+          {/* 설정 버튼 */}
           <button
-            onClick={clearApiKey}
-            className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs text-slate-400 border border-slate-700 transition-all"
-            title={t('apikey.change')}
+            onClick={() => setShowSettings(true)}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm border transition-all ${isKeySet
+                ? 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
+                : 'bg-amber-600/20 hover:bg-amber-600/30 text-amber-400 border-amber-500/50 animate-pulse'
+              }`}
+            title={t('settings.title')}
           >
-            <Key size={14} />
+            <Settings size={16} />
           </button>
-          <div className="relative group">
-            <button className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm text-slate-300 border border-slate-700 transition-all">
-              <Globe size={16} />
-              <span>{LOCALE_LABELS[locale]}</span>
-            </button>
-            <div className="absolute right-0 top-full mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 min-w-[120px]">
-              {(['ko', 'ja', 'en'] as Locale[]).map(l => (
-                <button
-                  key={l}
-                  onClick={() => setLocale(l)}
-                  className={`w-full text-left px-4 py-2 text-sm hover:bg-slate-700 first:rounded-t-lg last:rounded-b-lg transition-colors ${locale === l ? 'text-blue-400 font-bold' : 'text-slate-300'
-                    }`}
-                >
-                  {LOCALE_LABELS[l]}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
       </header>
       <main
@@ -596,6 +478,8 @@ const App: React.FC = () => {
           onApplyOverlay={handleApplyOverlay}
           onUpdateOverlays={handleUpdateOverlays}
           apiKey={apiKey}
+          ocrModels={preset.ocrModels}
+          inpaintModels={preset.inpaintModels}
           onOcrCost={apiCost.addOcrCost}
           onInpaintCost={apiCost.addInpaintCost}
           showError={showError}
@@ -630,6 +514,19 @@ const App: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* 설정 모달 */}
+      <SettingsModal
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        apiKey={apiKey}
+        onSetApiKey={handleSetApiKey}
+        onClearApiKey={clearApiKey}
+        isKeySet={isKeySet}
+        presetId={presetId}
+        onSetPresetId={setPresetId}
+        preset={preset}
+      />
 
       {/* Toast notifications */}
       <ToastContainer toasts={toasts} onRemove={removeToast} />

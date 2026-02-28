@@ -13,15 +13,15 @@ function getClient(apiKey: string): GoogleGenAI {
   return cachedClient;
 }
 
-// モデル優先順位
-const OCR_MODELS = ['gemini-3-flash-preview', 'gemini-2.5-flash'] as const;
-const INPAINT_MODELS = ['gemini-2.5-flash-image', 'gemini-2.5-flash'] as const;
-
 /**
  * OCR 텍스트 분석 — 모델 폴백 지원
- * gemini-3-flash-preview → gemini-2.5-flash
+ * 모델 배열을 외부에서 주입받아 순서대로 시도
  */
-export const analyzeTextInImage = async (apiKey: string, base64Image: string): Promise<OCRResult> => {
+export const analyzeTextInImage = async (
+  apiKey: string,
+  base64Image: string,
+  models: readonly string[] = ['gemini-3-flash-preview', 'gemini-2.5-flash']
+): Promise<OCRResult> => {
   const ai = getClient(apiKey);
   const rawBase64 = base64Image.includes(',') ? base64Image.split(',')[1] : base64Image;
 
@@ -70,7 +70,7 @@ export const analyzeTextInImage = async (apiKey: string, base64Image: string): P
 
   let lastError: unknown = null;
 
-  for (const model of OCR_MODELS) {
+  for (const model of models) {
     try {
       console.log(`[gemini] OCR trying model: ${model}`);
       const response = await ai.models.generateContent({
@@ -112,13 +112,14 @@ export const analyzeTextInImage = async (apiKey: string, base64Image: string): P
 
 /**
  * Gemini Image Editing — 글자 지우기 + 배경 복원
- * gemini-2.5-flash-image → gemini-2.5-flash 폴백
+ * 모델 배열을 외부에서 주입받아 순서대로 시도
  */
 export const inpaintBackground = async (
   apiKey: string,
   fullSlideBase64: string,
   region: { x: number; y: number; width: number; height: number },
-  slideSize: { width: number; height: number }
+  slideSize: { width: number; height: number },
+  models: readonly string[] = ['gemini-2.5-flash-image', 'gemini-2.5-flash']
 ): Promise<string | null> => {
   const ai = getClient(apiKey);
   const rawBase64 = fullSlideBase64.includes(',') ? fullSlideBase64.split(',')[1] : fullSlideBase64;
@@ -129,7 +130,7 @@ export const inpaintBackground = async (
 
   const prompt = `${regionInfo}Remove ALL text and letters from this image completely. Fill in the background naturally where the text was, matching the surrounding colors, patterns, and textures seamlessly. The output should look as if there was never any text. Keep the rest of the image completely unchanged. Return ONLY the edited image, no text response.`;
 
-  for (const model of INPAINT_MODELS) {
+  for (const model of models) {
     try {
       console.log(`[gemini] Inpaint trying model: ${model}, image size: ${rawBase64.length} chars`);
 

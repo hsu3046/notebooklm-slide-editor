@@ -298,6 +298,43 @@ export const translations = {
         en: '⭐ This project is open source',
     },
 
+    // ── Settings Modal ──
+    'settings.title': {
+        ko: '설정',
+        ja: '設定',
+        en: 'Settings',
+    },
+    'settings.language': {
+        ko: '언어',
+        ja: '言語',
+        en: 'Language',
+    },
+    'settings.model': {
+        ko: 'AI 모델',
+        ja: 'AIモデル',
+        en: 'AI Model',
+    },
+    'settings.save': {
+        ko: '저장',
+        ja: '保存',
+        en: 'Save',
+    },
+    'settings.clearKey': {
+        ko: 'Key 삭제',
+        ja: 'キー削除',
+        en: 'Clear Key',
+    },
+    'settings.keyActive': {
+        ko: 'API Key 등록 완료',
+        ja: 'APIキー登録済み',
+        en: 'API Key active',
+    },
+    'settings.apiRequired': {
+        ko: '이 기능을 사용하려면 설정에서 API Key를 등록해주세요.',
+        ja: 'この機能を使用するには設定からAPIキーを登録してください。',
+        en: 'Please set your API Key in Settings to use this feature.',
+    },
+
     // ── API Cost ──
     'cost.session': {
         ko: '이번 세션',

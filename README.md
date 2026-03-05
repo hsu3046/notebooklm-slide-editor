@@ -16,21 +16,27 @@
 
 ## 🇰🇷 한국어
 
-NotebookLM 등을 이용해서 AI로 생성한 PDF 슬라이드 및 이미지의 텍스트를 편집할 수 있는 웹 에디터입니다.
-Gemini API를 활용한 OCR 텍스트 분석과 배경 복원(인페인팅) 기능을 제공하며, 편집된 슬라이드를 PDF 또는 이미지(ZIP)로 다운로드할 수 있습니다.
-한국어·일본어·영어 UI를 지원합니다.
+NotebookLM으로 멋진 슬라이드를 만들었는데, 오타 하나 고치려면 처음부터 다시?
+이제 그럴 필요 없습니다.
+
+영역을 드래그하면 AI가 텍스트를 자동 인식하고, 원하는 내용으로 바꿔주고, 배경까지 깔끔하게 복원합니다.
+포토샵 없이, 재생성 없이 — **드래그 → 수정 → 다운로드**, 그게 전부입니다.
 
 ## 🇺🇸 English
 
-A web-based slide editor that uses AI to recognize text in PDF slides and replace it with your desired text.
-Powered by the Gemini API for OCR text analysis and background inpainting, it lets you download edited slides as PDF or images (ZIP).
-Supports Korean, Japanese, and English UI.
+You just generated beautiful slides with NotebookLM — but there's a typo. Start over?
+Not anymore.
+
+Drag over any text region and AI instantly recognizes it, lets you edit in place, and seamlessly restores the background.
+No Photoshop, no regeneration — just **drag → edit → download**. That's it.
 
 ## 🇯🇵 日本語
 
-PDFスライドのテキストをAIで認識し、任意のテキストに置き換えることができるWebエディタです。
-Gemini APIを活用したOCRテキスト分析と背景復元（インペインティング）機能を提供し、編集したスライドをPDFまたは画像（ZIP）でダウンロードできます。
-韓国語・日本語・英語のUIに対応しています。
+NotebookLMで素敵なスライドを作ったのに、誤字を一つ直すためにまた最初から？
+もう、その必要はありません。
+
+テキスト領域をドラッグするだけで、AIが自動認識・編集・背景復元まで一括処理。
+Photoshopも再生成も不要 — **ドラッグ → 編集 → ダウンロード**、それだけです。
 
 ---
 

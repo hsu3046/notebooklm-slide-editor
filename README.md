@@ -14,7 +14,7 @@
 
 ---
 
-## 🇰🇷 한국어
+## Summary-ko
 
 NotebookLM으로 멋진 슬라이드를 만들었는데, 오타 하나 고치려면 처음부터 다시?
 이제 그럴 필요 없습니다.
@@ -22,7 +22,7 @@ NotebookLM으로 멋진 슬라이드를 만들었는데, 오타 하나 고치려
 영역을 드래그하면 AI가 텍스트를 자동 인식하고, 원하는 내용으로 바꿔주고, 배경까지 깔끔하게 복원합니다.
 포토샵 없이, 재생성 없이 — **드래그 → 수정 → 다운로드**, 그게 전부입니다.
 
-## 🇺🇸 English
+## Summary-en
 
 You just generated beautiful slides with NotebookLM — but there's a typo. Start over?
 Not anymore.
@@ -30,7 +30,7 @@ Not anymore.
 Drag over any text region and AI instantly recognizes it, lets you edit in place, and seamlessly restores the background.
 No Photoshop, no regeneration — just **drag → edit → download**. That's it.
 
-## 🇯🇵 日本語
+## Summary-ja
 
 NotebookLMで素敵なスライドを作ったのに、誤字を一つ直すためにまた最初から？
 もう、その必要はありません。

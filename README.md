@@ -1,70 +1,109 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-
-# NotebookLM Slide Editor
-
-**AI-powered PDF slide editor with OCR text replacement and background inpainting**
+# ✏️ NotebookLM Slide Editor
 
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev)
 [![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite)](https://vite.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript)](https://www.typescriptlang.org)
 [![Gemini](https://img.shields.io/badge/Gemini_API-google-4285F4?logo=google)](https://ai.google.dev)
 
-</div>
+## Tagline-en
+
+NotebookLM makes research effortless — but editing those slides? Not so much.
+Now you can fix them in seconds and put them straight to work.
+
+## Tagline-ko
+
+자료 수집부터 정리까지 너무나 편리한 NotebookLM.
+근데 만들어진 슬라이드는 수정이 안 돼서 답답하셨죠?
+이제 쉽게 고쳐서, 바로 실무에 활용하세요.
+
+## Tagline-ja
+
+リサーチから整理まで驚くほど便利なNotebookLM。
+でも、できたスライドが編集できなくてもどかしかったですよね？
+もう大丈夫 — サッと直して、すぐ仕事に使えます。
 
 ---
 
-## 🇰🇷 한국어
+## Summary-en
 
-NotebookLM으로 멋진 슬라이드를 만들었는데, 오타 하나 고치려면 처음부터 다시?
-이제 그럴 필요 없습니다.
+You spent hours perfecting your NotebookLM slides — then spotted a typo at the very end.
+Start all over? That's the last thing you want to do.
+This editor fills that last 2%.
+Just drag over the text you want to fix, and the AI corrects the content and seamlessly restores the background.
+No Photoshop. No regenerating from scratch.
+Drag → Edit → Download. Your slide is ready to use, right now.
 
-영역을 드래그하면 AI가 텍스트를 자동 인식하고, 원하는 내용으로 바꿔주고, 배경까지 깔끔하게 복원합니다.
-포토샵 없이, 재생성 없이 — **드래그 → 수정 → 다운로드**, 그게 전부입니다.
+## Summary-ko
 
-## 🇺🇸 English
+NotebookLM으로 완성한 슬라이드, 마지막에 오타 하나를 발견했습니다.
+처음부터 다시 만들어야 할까요? 그건 너무 아깝죠.
+이 에디터가 그 2%를 채워드립니다.
+수정하고 싶은 텍스트를 드래그하면, AI가 내용을 고치고 배경까지 깔끔하게 복원합니다.
+포토샵도, 재생성도 필요 없습니다.
+드래그 → 수정 → 다운로드. 바로 실무에 쓸 수 있는 슬라이드가 완성됩니다.
 
-You just generated beautiful slides with NotebookLM — but there's a typo. Start over?
-Not anymore.
+## Summary-ja
 
-Drag over any text region and AI instantly recognizes it, lets you edit in place, and seamlessly restores the background.
-No Photoshop, no regeneration — just **drag → edit → download**. That's it.
-
-## 🇯🇵 日本語
-
-NotebookLMで素敵なスライドを作ったのに、誤字を一つ直すためにまた最初から？
-もう、その必要はありません。
-
-テキスト領域をドラッグするだけで、AIが自動認識・編集・背景復元まで一括処理。
-Photoshopも再生成も不要 — **ドラッグ → 編集 → ダウンロード**、それだけです。
+NotebookLM で仕上げたスライド、最後の最後でタイポを発見。
+また最初からやり直し？　それはさすがに、もったいない。
+このエディターが、その2%を補います。
+修正したいテキストをドラッグするだけで、AIが内容を直し、背景まできれいに復元します。
+Photoshopも、再生成も必要ありません。
+ドラッグ → 修正 → ダウンロード。 すぐに現場で使えるスライドが完成します。
 
 ---
 
-## Features
+## ✨ What It Does
 
-- 📄 **PDF to Slide Conversion** — Upload a PDF and convert each page into high-quality slide images for editing
-- 🔍 **AI-Powered OCR** — Select a text region on a slide, and Gemini analyzes the text content, font size, weight, color, family, and background
-- ✏️ **Text Replacement** — Replace recognized text with new content, fully customizable (font size, weight, color, alignment)
-- 🎨 **Background Inpainting** — AI-powered text removal that seamlessly fills the background, matching surrounding colors and textures
-- 🖼️ **Canvas Editor** — Interactive canvas with zoom, pan, drag-to-select, and 8-handle resizing for precise overlay positioning
-- ↩️ **Undo / Redo** — Full undo/redo history for all overlay operations
-- 💾 **Export Options** — Download edited slides as a PDF or as individual PNG images bundled in a ZIP archive
-- 🌐 **i18n Support** — Full Korean, Japanese, and English UI with auto-detection from browser language settings
-- 💰 **API Cost Tracking** — Real-time Gemini API usage cost estimation displayed in the UI
-- 🔑 **Flexible API Key** — Use your own Gemini API key via the UI or configure a server-side key via environment variable
+- **Edits text right on your slides** — Drag to select any text region, and Gemini AI detects the content with font details for instant editing
+- **Restores backgrounds seamlessly** — AI-powered inpainting removes old text and fills the area to match surrounding colors and textures
+- **Converts PDFs into editable slides** — Upload any PDF and each page becomes a high-quality slide image ready for editing
+- **Gives you full control over styling** — Customize replacement text with font size, weight, color, alignment, and family from 20 Google Fonts
+- **Tracks your API costs in real time** — See exactly how much each Gemini API call costs, displayed directly in the UI
+- **Supports undo/redo for every edit** — Full history management with Cmd+Z / Cmd+Shift+Z for worry-free editing
+- **Exports as PDF or PNG bundle** — Download all edited slides as a single PDF or individual PNG images in a ZIP
+- **Speaks your language** — Full Korean, Japanese, and English UI with automatic browser language detection
+- **Keeps your API key private** — BYOK (Bring Your Own Key) model — your key stays in your browser session, never sent to any server
 
-## Tech Stack
+---
 
-| Category | Technology |
-|---|---|
-| Frontend | React 19, TypeScript 5.8, Vite 6 |
+## 🚀 Try It Now
+
+👉 **[Live Demo](https://www.knowai.app/notebooklm-slide-editor)**
+
+---
+
+## 🛠 Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Framework | React 19 |
+| Language | TypeScript 5.8 (Strict) |
+| Build | Vite 6 |
 | AI / OCR | Google Gemini API (`@google/genai`) |
-| PDF Processing | PDF.js (CDN), jsPDF (CDN) |
+| PDF | PDF.js (CDN), jsPDF (CDN) |
 | Icons | Lucide React |
 | File Export | JSZip, File System Access API |
-| Deployment | Vercel |
+| Fonts | Google Fonts (20 families) |
+| Deploy | Vercel |
 
-## Architecture
+---
+
+## 📦 Installation
+
+```bash
+git clone https://github.com/hsu3046/notebooklm-slide-editor.git
+cd notebooklm-slide-editor
+npm install
+cp .env.example .env.local   # Fill in your Gemini API key (optional — you can also enter it in the UI)
+npm run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173)
+
+---
+
+## 📁 Project Structure
 
 ```
 notebooklm-slide-editor/
@@ -90,78 +129,39 @@ notebooklm-slide-editor/
 ├── utils/
 │   ├── renderOverlay.ts    # Canvas overlay rendering
 │   ├── saveFile.ts         # File download utilities
-│   └── analytics.ts        # Usage analytics
+│   └── analytics.ts        # Usage analytics (GA4)
 └── constants/
-    └── i18n.ts             # Translation strings
+    └── i18n.ts             # Translation strings (ko/ja/en)
 ```
 
-## Getting Started
+---
 
-### Prerequisites
+## 🗺 Roadmap
 
-- **Node.js** 18+
-- **Gemini API Key** — Get one at [Google AI Studio](https://aistudio.google.com/apikey)
+- [ ] Batch editing — select and replace multiple text regions at once
+- [ ] Image overlay support — insert logos or images onto slides
+- [ ] Drag-and-drop slide reordering
+- [ ] Cloud save — persist edits across sessions
+- [ ] Custom font upload — use your own fonts beyond Google Fonts
 
-### Installation
+---
 
-```bash
-# Clone the repository
-git clone https://github.com/hsu3046/notebooklm-slide-editor.git
-cd notebooklm-slide-editor
+## 🤝 Contributing
 
-# Install dependencies
-npm install
+Contributions are welcome! Please follow these steps:
 
-# Configure API key (optional — you can also enter it in the UI)
-cp .env.example .env.local
-# Edit .env.local and set your GEMINI_API_KEY
-```
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feat/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat(scope): add amazing feature'`)
+4. Push to the branch (`git push origin feat/amazing-feature`)
+5. Open a Pull Request
 
-### Run Locally
+---
 
-```bash
-npm run dev
-```
+## 📄 License
 
-The app will be available at `http://localhost:5173`.
+This project is licensed under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.html).
 
-### Build for Production
+---
 
-```bash
-npm run build
-npm run preview
-```
-
-## Usage
-
-1. **Upload a PDF** — Click the upload button or drag & drop a PDF file
-2. **Select a text region** — Click and drag on the canvas to select the text area you want to edit
-3. **Analyze with AI** — Click "Analyze" to run Gemini OCR on the selected region
-4. **Edit the text** — Modify the recognized text, adjust font properties (size, weight, color, alignment)
-5. **Apply the overlay** — Click "Apply" to place the text overlay on the slide
-6. **Download** — Export all slides as a PDF or as PNG images (ZIP)
-
-## Gemini Models
-
-The app supports model selection via the Settings modal:
-
-| Preset | OCR Model | Inpaint Model | OCR Cost | Inpaint Cost |
-|---|---|---|---|---|
-| Default (v2.5) | `gemini-3-flash-preview` | `gemini-2.5-flash-image` | ~$0.0003 | ~$0.003 |
-| Unified (v3.1) | `gemini-3.1-flash-image-preview` | `gemini-3.1-flash-image-preview` | ~$0.0004 | ~$0.05 |
-
-All models include automatic fallback to `gemini-2.5-flash`.
-
-## Deployment
-
-Pre-configured for Vercel deployment with `vercel.json`. Supports sub-path routing at `/notebooklm-slide-editor`.
-
-```bash
-# Deploy to Vercel
-npx vercel --prod
-```
-
-## License
-
-MIT
-
+*Built by [KnowAI](https://knowai.space) · © 2026 KnowAI*

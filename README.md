@@ -69,7 +69,7 @@ Photoshopも、再生成も必要ありません。
 
 ## 🚀 Try It Now
 
-👉 **[Live Demo](https://www.knowai.app/notebooklm-slide-editor)**
+👉 **[Live Demo](https://notebooklm.knowai.app/)**
 
 ---
 
